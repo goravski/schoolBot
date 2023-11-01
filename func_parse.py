@@ -23,21 +23,28 @@ def init_token(session):
     log.info(f"Token inited: {csrf_token}")
 
 
-def get_pearent_page(session) -> str:
+def get_dairy_page(session):
+    """Отправляем POST запрос данными авторизации и получаем дневник текущей недели"""
     init_token(session=session)
-    """Отправляем POST запрос данными авторизации"""
+    # Отправляем запрос на авторизацию
     response = session.post(constants.url_login, data=constants.data)
-    write_response_to_file(resp=response, filename="post")
     log.info(f"Post request login code {response.status_code}")
+
+    # Отправляем запрос на данные дневника текущей недели
+    resp_result = session.get(
+        parse_for_get_current_dairy_href(response=response), headers=constants.headers
+    )
+    log.info(f"request dairy page status {resp_result.status_code}")
+    return resp_result
+
+
+def parse_for_get_current_dairy_href(response):
+    """Парсим ответ после авторизации для получения ссылки на дневник"""
     soup = BeautifulSoup(response.text, "html.parser")
     user_1 = soup.findAll(class_="user_type_1")
-    href = "Null"
+    href = ""
     for i in user_1:
         if "schools" in i["href"] and not "887325" in i["href"]:
             href = i["href"] + "/dnevnik/quarter/80"
             log.info(f"Got reference: {href}")
-    # session.headers.update({"Referer": href})
-    resp_result = session.get(href, headers=constants.headers)
-    write_response_to_file(resp=resp_result, filename="result")
-    print(resp_result.status_code)
     return href
