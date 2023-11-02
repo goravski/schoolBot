@@ -28,18 +28,20 @@ def authantication_login(message):
         log.info(f"Request password {message.from_user.username}")
         bot.register_next_step_handler(msg, authantication_password)
     except Exception as e:
-        bot.reply_to(message, "oooops")
+        bot.reply_to(message, f"Exception in authantication_login {e.with_traceback}")
 
 
 def authantication_password(message):
     try:
         user.data["password"] = message.text
         bot.send_message(
-            message.chat.id, f"{user.data['username']} Ждите ответа от сервера..."
+            message.chat.id, f"{user.data['username'] }, ждите ответа от сервера..."
         )
         log.info(f"Login and password saved {message.from_user.username}")
     except Exception as e:
-        bot.reply_to(message, "oooops")
+        bot.reply_to(
+            message, f"Exception in authantication_password {e.with_traceback}"
+        )
 
 
 if __name__ == "__main__":
