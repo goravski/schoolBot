@@ -1,10 +1,10 @@
 import telebot
 import constants
-import logging
+import logging as log
 import schoolsAuth
 
-logging.basicConfig(
-    level=logging.INFO,
+log.basicConfig(
+    level=log.INFO,
     filename="schools_logs",
     filemode="w",
     format="%(asctime)s, %(levelname)s, %(message)s",
@@ -17,22 +17,30 @@ user = schoolsAuth.UserAthenticationData()
 @bot.message_handler(commands=["start"])
 def start_message(message):
     msg = bot.reply_to(message, "Введите логин:")
+    log.info(f"Request login of {message.from_user.username}")
     bot.register_next_step_handler(msg, authantication_login)
 
 
 def authantication_login(message):
-    user.data["username"] = message.text
-    msg = bot.reply_to(message, "Введите пароль:")
-    bot.register_next_step_handler(msg, authantication_password)
+    try:
+        user.data["username"] = message.text
+        msg = bot.reply_to(message, "Введите пароль:")
+        log.info(f"Request password {message.from_user.username}")
+        bot.register_next_step_handler(msg, authantication_password)
+    except Exception as e:
+        bot.reply_to(message, "oooops")
 
 
 def authantication_password(message):
-    user.data["password"] = message.text
-    print(user.data)
-    bot.send_message(
-        message.chat.id, f"{user.data['username']} Ждите ответа от сервера..."
-    )
+    try:
+        user.data["password"] = message.text
+        bot.send_message(
+            message.chat.id, f"{user.data['username']} Ждите ответа от сервера..."
+        )
+        log.info(f"Login and password saved {message.from_user.username}")
+    except Exception as e:
+        bot.reply_to(message, "oooops")
 
 
 if __name__ == "__main__":
-    bot.infinity_polling()
+    bot.infinity_polling(timeout=120)
