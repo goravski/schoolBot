@@ -22,3 +22,6 @@ data = {
     "csrfmiddlewaretoken": "",
     "|123": "|123",
 }
+
+bot_token = "6349299772:AAFT1JiUtOLsShA1TQoOj4WLg8yVdEfW7SQ"
+bot_name = "SchoolByDairyBot"

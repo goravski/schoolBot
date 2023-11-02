@@ -28,13 +28,13 @@ def get_dairy_page(session):
     init_token(session=session)
     # Отправляем запрос на авторизацию
     response = session.post(constants.url_login, data=constants.data)
-    log.info(f"Post request login code {response.status_code}")
+    log.info(f"Authorization status code {response.status_code}")
 
     # Отправляем запрос на данные дневника текущей недели
     resp_result = session.get(
         parse_for_get_current_dairy_href(response=response), headers=constants.headers
     )
-    log.info(f"request dairy page status {resp_result.status_code}")
+    log.info(f"Request dairy page status code {resp_result.status_code}")
     return resp_result
 
 
