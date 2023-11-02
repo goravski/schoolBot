@@ -10,15 +10,5 @@ headers = {
 }
 
 
-# Логин и пароль для авторизации
-# login = input("Login:")
-# password = input("Введите пароль:")
-login = "goravski"
-password = "19672731"
-
-data = {
-    "username": login,
-    "password": password,
-    "csrfmiddlewaretoken": "",
-    "|123": "|123",
-}
+bot_token = "6349299772:AAFT1JiUtOLsShA1TQoOj4WLg8yVdEfW7SQ"
+bot_name = "SchoolByDairyBot"
