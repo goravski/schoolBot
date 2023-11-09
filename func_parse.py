@@ -2,7 +2,6 @@ import requests
 from bs4 import BeautifulSoup
 import constants
 import logging as log
-import schoolsAuth
 
 
 def write_response_to_file(resp, filename):
@@ -10,32 +9,38 @@ def write_response_to_file(resp, filename):
         file.write(resp.text)
 
 
-def init_token(session):
+def init_token(user):
     """Отправляем GET запрос на страницу авторизации, чтобы получить CSRF-токен"""
-    response = session.get(constants.url_login)
 
+    log.info(f"def init_token make request to url: {constants.url_login}")
+    session = requests.Session()
+
+    response = session.get(constants.url_login)
+    log.info(f"get login response {response.status_code}")
     # Указываем Referer. Если не указать, приводит к ошибкам.
     session.headers.update({"Referer": constants.url_base})
     soup = BeautifulSoup(response.text, "html.parser")
     csrf_token = soup.find("input", {"name": "csrfmiddlewaretoken"})["value"]
 
     # Определить параметр CSRF-токен формы для отправки POST запроса
-    schoolsAuth.data["csrfmiddlewaretoken"] = csrf_token
+    user.data["csrfmiddlewaretoken"] = csrf_token
+    user.session = session
     log.info(f"Token inited: {csrf_token}")
 
 
-def get_dairy_page(session):
+def get_dairy_page(user):
     """Отправляем POST запрос данными авторизации и получаем дневник текущей недели"""
-    init_token(session=session)
+    init_token(user=user)
     # Отправляем запрос на авторизацию
-    response = session.post(constants.url_login, data=constants.data)
+    response = user.session.post(constants.url_login, data=user.data)
     log.info(f"Authorization status code {response.status_code}")
 
     # Отправляем запрос на данные дневника текущей недели
-    resp_result = session.get(
+    resp_result = user.session.get(
         parse_for_get_current_dairy_href(response=response), headers=constants.headers
     )
     log.info(f"Request dairy page status code {resp_result.status_code}")
+    write_response_to_file(resp_result, "dnevnik")
     return resp_result
 
 
