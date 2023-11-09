@@ -1,20 +1,18 @@
 import requests
 from bs4 import BeautifulSoup
-import func_parse as fp
 
 
 class UserAthenticationData:
     # Логин и пароль для авторизации
-    login = "goravski"
-    password = "19672731"
-
     data = {
-        "username": login,
-        "password": password,
+        "username": "goravsk",
+        "password": "1967273",
         "csrfmiddlewaretoken": "",
         "|123": "|123",
     }
-    session = requests.Session()
 
-    # hre = fp.get_dairy_page(session=session)
-    # print(f"HREF :{hre}")
+    def __init__(self):
+        self.data["username"] = ""
+        self.data["password"] = ""
+        self.data["csrfmiddlewaretoken"] = ""
+        self.data["|123"] = "|123"
