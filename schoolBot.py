@@ -2,6 +2,7 @@ import telebot
 import constants
 import logging as log
 import schoolsAuth
+import func_parse as fp
 
 log.basicConfig(
     level=log.INFO,
@@ -23,6 +24,7 @@ def start_message(message):
 
 def authantication_login(message):
     try:
+        log.info(f"USER object data: {user.data}")
         user.data["username"] = message.text
         msg = bot.reply_to(message, "Введите пароль:")
         log.info(f"Request password {message.from_user.username}")
@@ -38,11 +40,10 @@ def authantication_password(message):
             message.chat.id, f"{user.data['username'] }, ждите ответа от сервера..."
         )
         log.info(f"Login and password saved {message.from_user.username}")
+        hre = fp.get_dairy_page(user)
+        print(f"HREF :{hre}")
     except Exception as e:
-        bot.reply_to(
-            message, f"Exception in authantication_password {e.with_traceback}"
-        )
+        bot.reply_to(message, f"Exception in authantication_password {e}")
 
 
-if __name__ == "__main__":
-    bot.infinity_polling(timeout=120)
+bot.infinity_polling(interval=0)
