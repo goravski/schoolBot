@@ -87,23 +87,29 @@ def parse_for_get_current_dairy_href(response):
 
 
 def parse_get_week_lessons(response):
+    """Разбираем страницу дневника и складываем в словарь,
+    где {"день недели, число" : [список предметов[предмет, дом. задание, оценка]]}"""
     response_text = re.sub(r">\s+<", "><", response.text.replace("\n", ""))
     soup = BeautifulSoup(response_text, "html.parser")
     days = soup.findAll("div", class_="db_day")
 
     log.info(f"parse_get_week_lessons - got days: days")
     week_dict = {}
+    # В словарь по порядку присваиваем значение дня ключю и инициируем список "День"
     for day in days:
         date = get_element_of_day(list(day.find("th", class_="lesson").strings), 0)
         day_list = []
 
         week_dict[date] = day_list
+        # В "День" передаем значение предметов
         for lesson in day.findAll("td", class_="lesson"):
             lesson_list = []
             lesson_list.append(
                 get_element_of_day(list(lesson.strings), 0).replace(" ", "")
             )
             day_list.append(lesson_list)
+
+        # В "День" передаем значение заданий на дом
         i = 0
         for task in day.findAll("td", class_="ht"):
             home_task = task.findAll("div", class_="ht-text")
@@ -113,16 +119,15 @@ def parse_get_week_lessons(response):
                 print(f"{i}. NOT Home Task")
                 day_list[i].append(" ")
             i += 1
+        # В "День" передаем значение оценок
         i = 0
         for mark in day.findAll("div", class_="mark_box"):
             day_list[i].append(get_element_of_day(list(mark.strings), 0))
             i += 1
 
-    print(week_dict)
-    write_dict_to_file(week_dict, "week")
-
 
 def get_element_of_day(element_list, int) -> str:
+    """Проверка списка на пустоту и инициирование пробелом"""
     if element_list:
         return element_list[int]
     else:
