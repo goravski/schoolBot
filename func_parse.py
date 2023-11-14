@@ -5,17 +5,19 @@ import logging as log
 import re
 
 
-def write_response_to_file(resp, filename):
-    with open(f"{filename}.html", "w", encoding="utf-8") as file:
-        file.write(resp.text)
-
-
-def write_dict_to_file(dict, filename):
-    with open(f"{filename}.txt", "a", encoding="utf-8") as file:
-        for key, values in dict.items():
-            file.write(f"{key}\n")
-            for value in values:
-                file.write(f"{value}\n")
+def transform_dict_to_text(dict) -> str:
+    text = ""
+    for key, values in dict.items():
+        text += "".join(f"\n{key}\n")
+        for value in values:
+            str = ""
+            str += value[0]
+            while len(str) < 40:
+                str += " "
+            str += f"оц = {value[2]}\n"
+            str += f"        д/з: {value[1]}\n"
+            text += str
+    return text
 
 
 def init_token(user):
@@ -58,9 +60,7 @@ def get_dairy_page(user):
     log.info(
         f"get_dairy_page() - request current dairy page status code {resp_result.status_code}"
     )
-    write_response_to_file(resp_result, "result")
-    parse_get_week_lessons(resp_result)
-    return resp_result
+    return parse_get_week_lessons(resp_result)
 
 
 def parse_for_get_dairy_href(response):
@@ -86,14 +86,14 @@ def parse_for_get_current_dairy_href(response):
     return href_dairy
 
 
-def parse_get_week_lessons(response):
+def parse_get_week_lessons(response) -> dict:
     """Разбираем страницу дневника и складываем в словарь,
     где {"день недели, число" : [список предметов[предмет, дом. задание, оценка]]}"""
     response_text = re.sub(r">\s+<", "><", response.text.replace("\n", ""))
     soup = BeautifulSoup(response_text, "html.parser")
     days = soup.findAll("div", class_="db_day")
 
-    log.info(f"parse_get_week_lessons - got days: days")
+    log.info(f"parse_get_week_lessons - got days soup")
     week_dict = {}
     # В словарь по порядку присваиваем значение дня ключю и инициируем список "День"
     for day in days:
@@ -101,6 +101,7 @@ def parse_get_week_lessons(response):
         day_list = []
 
         week_dict[date] = day_list
+        log.info(f"parse_get_week_lessons - intited day {date}")
         # В "День" передаем значение предметов
         for lesson in day.findAll("td", class_="lesson"):
             lesson_list = []
@@ -116,7 +117,6 @@ def parse_get_week_lessons(response):
             if home_task:
                 day_list[i].append(home_task[0].getText().strip())
             else:
-                print(f"{i}. NOT Home Task")
                 day_list[i].append(" ")
             i += 1
         # В "День" передаем значение оценок
@@ -124,6 +124,7 @@ def parse_get_week_lessons(response):
         for mark in day.findAll("div", class_="mark_box"):
             day_list[i].append(get_element_of_day(list(mark.strings), 0))
             i += 1
+    return week_dict
 
 
 def get_element_of_day(element_list, int) -> str:
