@@ -36,7 +36,7 @@ def init_token(user):
     # Определить параметр CSRF-токен формы для отправки POST запроса
     user.data["csrfmiddlewaretoken"] = csrf_token
     user.session = session
-    log.info(f"Token inited: {csrf_token}")
+    log.info(f"init_token () = Token inited: {csrf_token}")
 
 
 def get_dairy_page(user):
