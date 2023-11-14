@@ -5,8 +5,8 @@ from bs4 import BeautifulSoup
 class UserAthenticationData:
     # Логин и пароль для авторизации
     data = {
-        "username": "goravsk",
-        "password": "1967273",
+        "username": "",
+        "password": "",
         "csrfmiddlewaretoken": "",
         "|123": "|123",
     }
