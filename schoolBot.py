@@ -63,17 +63,28 @@ def authantication_password(message):
         )
         dairy = fp.get_dairy_page(user)
         text = fp.transform_dict_to_text(dairy)
-        bot.send_message(message.chat.id, text=text)
+        log.info(f"authantication_password - text ready")
+        bot.send_message(
+            message.chat.id,
+            text=text,
+            parse_mode="Markdown",
+        )
 
         bot.send_message(
             message.chat.id,
-            text="Для получения обновленной информации нажмите кнопку <Обновить>"
-            + "или введите текст 'Обновить' и повторно введите логин и пароль",
+            text="_Для получения обновленной информации нажмите кнопку <Обновить>"
+            + "или введите текст 'Обновить' и повторно введите логин и пароль_",
+            parse_mode="Markdown",
         )
         log.info(f"Sent dairy to chat")
     except Exception as e:
         log.warning(f"Exception in authantication_password. Exception: {e}")
-        bot.reply_to(message, f"Ошиблись логином или паролем. \n Нажмите 'Обновить'")
+        if e.__cause__ is None:
+            bot.reply_to(
+                message, f"Ошиблись логином или паролем. \n Нажмите 'Обновить'"
+            )
+        else:
+            bot.reply_to(message, f"Ошибка обработки данных. \n Попробуйте позже")
 
 
 try:

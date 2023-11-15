@@ -8,14 +8,14 @@ import re
 def transform_dict_to_text(dict) -> str:
     text = ""
     for key, values in dict.items():
-        text += "".join(f"\n{key}\n")
+        text += "".join(f"\n*{key}*\n")
         for value in values:
             str = ""
             str += value[0]
             while len(str) < 40:
                 str += " "
-            str += f"оценка = {value[2]}\n"
-            str += f"        д/з: {value[1]}\n"
+            str += f"оценка = _{value[2]}_ \n"
+            str += f"        д/з: _{value[1]}_ \n"
             text += str
     return text
 
@@ -90,44 +90,49 @@ def parse_for_get_current_dairy_href(response):
 
 
 def parse_get_week_lessons(response) -> dict:
-    """Разбираем страницу дневника и складываем в словарь,
-    где {"день недели, число" : [список предметов[предмет, дом. задание, оценка]]}"""
-    response_text = re.sub(r">\s+<", "><", response.text.replace("\n", ""))
-    soup = BeautifulSoup(response_text, "html.parser")
-    days = soup.findAll("div", class_="db_day")
+    try:
+        """Разбираем страницу дневника и складываем в словарь,
+        где {"день недели, число" : [список предметов[предмет, дом. задание, оценка]]}
+        """
+        response_text = re.sub(r">\s+<", "><", response.text.replace("\n", ""))
+        soup = BeautifulSoup(response_text, "html.parser")
+        days = soup.findAll("div", class_="db_day")
 
-    log.info(f"parse_get_week_lessons - got days soup")
-    week_dict = {}
-    # В словарь по порядку присваиваем значение дня ключю и инициируем список "День"
-    for day in days:
-        date = get_element_of_day(list(day.find("th", class_="lesson").strings), 0)
-        day_list = []
+        log.info(f"parse_get_week_lessons - got days soup")
+        week_dict = {}
+        # В словарь по порядку присваиваем значение дня ключю и инициируем список "День"
+        for day in days:
+            date = get_element_of_day(list(day.find("th", class_="lesson").strings), 0)
+            day_list = []
 
-        week_dict[date] = day_list
-        log.info(f"parse_get_week_lessons - intited day {date}")
-        # В "День" передаем значение предметов
-        for lesson in day.findAll("td", class_="lesson"):
-            lesson_list = []
-            lesson_list.append(
-                get_element_of_day(list(lesson.strings), 0).replace(" ", "")
-            )
-            day_list.append(lesson_list)
+            week_dict[date] = day_list
+            log.info(f"parse_get_week_lessons - intited day {date}")
+            # В "День" передаем значение предметов
+            for lesson in day.findAll("td", class_="lesson"):
+                lesson_list = []
+                lesson_list.append(
+                    get_element_of_day(list(lesson.strings), 0).replace(" ", "")
+                )
+                day_list.append(lesson_list)
 
-        # В "День" передаем значение заданий на дом
-        i = 0
-        for task in day.findAll("td", class_="ht"):
-            home_task = task.findAll("div", class_="ht-text")
-            if home_task:
-                day_list[i].append(home_task[0].getText().strip())
-            else:
-                day_list[i].append(" ")
-            i += 1
-        # В "День" передаем значение оценок
-        i = 0
-        for mark in day.findAll("div", class_="mark_box"):
-            day_list[i].append(get_element_of_day(list(mark.strings), 0))
-            i += 1
-    return week_dict
+            # В "День" передаем значение заданий на дом
+            i = 0
+            for task in day.findAll("td", class_="ht"):
+                home_task = task.findAll("div", class_="ht-text")
+                if home_task:
+                    day_list[i].append(home_task[0].getText().strip())
+                else:
+                    day_list[i].append(" ")
+                i += 1
+            # В "День" передаем значение оценок
+            i = 0
+            for mark in day.findAll("div", class_="mark_box"):
+                day_list[i].append(get_element_of_day(list(mark.strings), 0))
+                i += 1
+        log.info(f"parse_get_week_lessons() - send week_dict")
+        return week_dict
+    except Exception as e:
+        log.warning(f"Exception in parse_get_week_lessons (): {e}")
 
 
 def get_element_of_day(element_list, int) -> str:
