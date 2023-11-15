@@ -91,3 +91,5 @@ try:
     bot.infinity_polling(interval=0)
 except TimeoutError:
     log.warning(f"Timed out")
+except ConnectionError:
+    log.warning(f"Disconnected")
