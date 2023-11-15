@@ -1,0 +1,8 @@
+meta:
+  enviroment: python
+  toolchain:
+    name: pip
+    version : 3.10
+
+run:
+  scriptName: schoolBot.py
