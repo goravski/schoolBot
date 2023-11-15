@@ -92,4 +92,4 @@ try:
 except TimeoutError:
     log.warning(f"Timed out")
 except ConnectionError:
-    log.warning(f"Disconnected")
+    log.warning(f"Timed out")
