@@ -12,7 +12,7 @@ def transform_dict_to_text(dict) -> str:
         for value in values:
             str = ""
             str += value[0]
-            while len(str) < 40:
+            while len(str) < 35:
                 str += " "
             str += f"оценка = _{value[2]}_ \n"
             str += f"        д/з: _{value[1]}_ \n"
