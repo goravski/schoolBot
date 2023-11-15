@@ -22,29 +22,34 @@ def start_message(message):
     button = types.KeyboardButton("Обновить")
     markup.add(button)
     text = (
-        "Добрый день!\n Для получения дневника текущей недели нажмите кнопку <Обновить>"
+        "Добрый день!\n"
+        + "Для получения дневника текущей недели нажмите внизу экрана кнопку <Обновить>"
         + "и введите по запросу логин и пароль для входа на сайт schools.by"
     )
     bot.send_message(message.chat.id, text=text, reply_markup=markup)
 
 
 @bot.message_handler(content_types="text")
-def message_teply(message):
+def message_reply(message):
     if message.text == "Обновить":
         msg = bot.reply_to(message, "Введите логин:")
         bot.register_next_step_handler(msg, authantication_login)
-        log.info(f"Request login of {message.from_user.username}")
+        log.info(
+            f"message_reply() - Request login of user {message.from_user.username}"
+        )
 
 
 def authantication_login(message):
     try:
         user.data["username"] = message.text
         msg = bot.reply_to(message, "Введите пароль:")
-        log.info(f"Request password {message.from_user.username}")
+        log.info(
+            f"authantication_login() - Request password of user :{message.from_user.username}"
+        )
         bot.register_next_step_handler(msg, authantication_password)
     except Exception as e:
-        bot.reply_to(message, f"Exception in authantication_login {e.with_traceback}")
-        log.warning(f"Exception in authantication_login {e}")
+        bot.reply_to(message, f"Exception in authantication_login() {e.with_traceback}")
+        log.warning(f"Exception in authantication_login() {e}")
 
 
 def authantication_password(message):
@@ -67,8 +72,11 @@ def authantication_password(message):
         )
         log.info(f"Sent dairy to chat")
     except Exception as e:
-        bot.reply_to(message, f"Exception in authantication_password {e}")
-        log.warning(f"Exception in authantication_password {e}")
+        log.warning(f"Exception in authantication_password. Exception: {e}")
+        bot.reply_to(message, f"Ошиблись логином или паролем. \n Нажмите 'Обновить'")
 
 
-bot.infinity_polling(interval=0)
+try:
+    bot.infinity_polling(interval=0)
+except TimeoutError:
+    log.warning(f"Timed out")
