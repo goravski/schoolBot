@@ -1,0 +1,5 @@
+pyTelegramBotAPI
+logging
+re
+requests
+bs4
