@@ -14,7 +14,7 @@ def transform_dict_to_text(dict) -> str:
             str += value[0]
             while len(str) < 40:
                 str += " "
-            str += f"оц = {value[2]}\n"
+            str += f"оценка = {value[2]}\n"
             str += f"        д/з: {value[1]}\n"
             text += str
     return text
@@ -23,7 +23,7 @@ def transform_dict_to_text(dict) -> str:
 def init_token(user):
     """Отправляем GET запрос на страницу авторизации, чтобы получить CSRF-токен"""
 
-    log.info(f"def init_token make request to url: {constants.url_login}")
+    log.info(f"init_token() - make request to url: {constants.url_login}")
     session = requests.Session()
 
     response = session.get(constants.url_login)
@@ -41,26 +41,29 @@ def init_token(user):
 
 def get_dairy_page(user):
     """Отправляем POST запрос данными авторизации и получаем дневник текущей недели"""
-    init_token(user=user)
-    # Отправляем запрос на авторизацию
-    response = user.session.post(constants.url_login, data=user.data)
-    log.info(f"get_dairy_page() - Authorization status code {response.status_code}")
+    try:
+        init_token(user=user)
+        # Отправляем запрос на авторизацию
+        response = user.session.post(constants.url_login, data=user.data)
+        log.info(f"get_dairy_page() - Authorization status code {response.status_code}")
 
-    # Отправляем запрос на данные для выбора периода
-    href_quarter = parse_for_get_dairy_href(response=response)
-    resp_quarter = user.session.get(href_quarter, headers=constants.headers)
-    log.info(
-        f"get_dairy_page() - Request quarter's page status code {resp_quarter.status_code}"
-    )
+        # Отправляем запрос на данные для выбора периода
+        href_quarter = parse_for_get_dairy_href(response=response)
+        resp_quarter = user.session.get(href_quarter, headers=constants.headers)
+        log.info(
+            f"get_dairy_page() - Request quarter's page status code {resp_quarter.status_code}"
+        )
 
-    # Отправляем запрос на данные для текущего дневника
-    href_dairy = href_quarter + parse_for_get_current_dairy_href(resp_quarter)
-    log.info(f"get_dairy_page() - result dairy href{href_dairy}")
-    resp_result = user.session.get(href_dairy, headers=constants.headers)
-    log.info(
-        f"get_dairy_page() - request current dairy page status code {resp_result.status_code}"
-    )
-    return parse_get_week_lessons(resp_result)
+        # Отправляем запрос на данные для текущего дневника
+        href_dairy = href_quarter + parse_for_get_current_dairy_href(resp_quarter)
+        log.info(f"get_dairy_page() - result dairy href{href_dairy}")
+        resp_result = user.session.get(href_dairy, headers=constants.headers)
+        log.info(
+            f"get_dairy_page() - request current dairy page status code {resp_result.status_code}"
+        )
+        return parse_get_week_lessons(resp_result)
+    except Exception as e:
+        log.warning(f"Exception in get_dairy_page () Invalid login or password {e}")
 
 
 def parse_for_get_dairy_href(response):
